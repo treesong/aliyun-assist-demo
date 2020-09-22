@@ -18,10 +18,14 @@ echo "应用服务器 IP 列表：$vm_ip_list"
 parameters="{\"vm-ip-list\": \"${vm_ip_list}\"}"
 
 ## 更新代码，编译打包，并复制到应用服务器上
-## run "pull-build-deploy-code.sh"
+## run "4-pull-build-deploy-code.sh"
+commandId=$(aliyun ecs DescribeCommands --RegionId=cn-shenzhen \
+  --Name="4-pull-build-deploy-code" \
+  | jq -r .Commands.Command[].CommandId)
+
 invokeId=$(aliyun ecs InvokeCommand \
   --RegionId=cn-shenzhen \
-  --CommandId="c-sz0whb7djs60hs" \
+  --CommandId=$commandId \
   --InstanceId.1=$compilerVmId \
   --Parameters="$parameters" \
  | jq -r .InvokeId)
@@ -68,9 +72,13 @@ InstanceIdArgs=$(echo ${idArray[@]});
 echo $InstanceIdArgs
 
 ## 重启 WebApp Java 应用 (c-sz0wh66r6146ps)
+commandId=$(aliyun ecs DescribeCommands --RegionId=cn-shenzhen \
+  --Name="5-start-webapp-server" \
+  | jq -r .Commands.Command[].CommandId)
+
 invokeId=$(aliyun ecs InvokeCommand $InstanceIdArgs \
   --RegionId=cn-shenzhen \
-  --CommandId="c-sz0wh66r6146ps" \
+  --CommandId=$commandId \
   | jq -r .InvokeId)
 
 echo "任务 ID:  ${invokeId}"
